@@ -5,8 +5,8 @@ import java.util.Random;
 
 public class Maze {
 
-    private final int[][] matrix;
-    private final int[][] matrixWeight;
+    private Node[][] matrix;
+
     private final int height;
     private final int width;
 
@@ -14,12 +14,11 @@ public class Maze {
     public Maze(int height, int width) {
         this.height = height;
         this.width = width;
-        this.matrix = new int[height][width];
-        this.matrixWeight = new int[height][width];
+        this.matrix = new Node[height][width];
     }
 
     public void start() {
-        fillDefaultMatrixWeight();
+        fillDefaultNodes();
         randomizeNodeWeights();
         setStartAndEnd();
 
@@ -27,22 +26,39 @@ public class Maze {
         System.out.println("Node Weights Representation");
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                System.out.printf("%02d" + " ", matrixWeight[i][j]);
+                System.out.printf("%02d" + " ", matrix[i][j].getWeight());
             }
             System.out.println();
         }
         //////////////////////////////////////////
 
-
         populateMaze();
         printMaze();
     }
 
-    // Fill all weights  as 99 which are outsides walls not to be used
-    public void fillDefaultMatrixWeight() {
-        for (int[] arr : matrixWeight) {
-            Arrays.fill(arr, 99);
+        public void fillDefaultNodes() {
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    matrix[i][j] = new Node();
+                }
+            }
+    }
+
+    // Assign random values to each node, which will be used to find MST
+    private void randomizeNodeWeights() {
+        Random random = new Random();
+        for (int i = 1; i < height - 1; i++) {
+            for (int j = 1; j < width - 1; j++) {
+                matrix[i][j].setWeight(random.nextInt(80) + 10);
+            }
         }
+    }
+
+    // set 2 openings for start and exit
+    private void setStartAndEnd() {
+        //TODO: randomize instead of preset start/end
+        matrix[1][0].setWeight(1);
+        matrix[height - 2][width - 1].setWeight(1);
     }
 
 
@@ -51,7 +67,7 @@ public class Maze {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 //TODO: set actual, not just walls
-                matrix[i][j] = 1;
+                matrix[i][j].setWall(1);
             }
         }
     }
@@ -61,9 +77,9 @@ public class Maze {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 // wall is 1, open space is 0
-                if (matrix[i][j] == 1) {
+                if (matrix[i][j].getWall() == 1) {
                     System.out.print("\u2588\u2588");
-                } else if (matrix[i][j] == 0) {
+                } else if (matrix[i][j].getWall() == 0) {
                     System.out.print("  ");
                 }
             }
@@ -71,22 +87,6 @@ public class Maze {
         }
     }
 
-    // Assign random values to each node, which will be used to find MST
-    private void randomizeNodeWeights() {
-        Random random = new Random();
-        for (int i = 1; i < height - 1; i++) {
-            for (int j = 1; j < width - 1; j++) {
-                matrixWeight[i][j] = random.nextInt(80) + 10;
-            }
-        }
-    }
-
-    // set 2 openings for start and exit
-    private void setStartAndEnd() {
-        //TODO: randomize instead of preset start/end
-        matrixWeight[1][0] = 1;
-        matrixWeight[height - 2][width - 1] = 1;
-    }
 
 
 }
