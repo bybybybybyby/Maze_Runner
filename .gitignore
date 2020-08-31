@@ -1,0 +1,6 @@
+# Project exclude paths
+/.gradle/
+/Maze Runner/task/build/
+/Maze Runner/task/out/
+/Maze Runner/task/out/production/classes/
+/Maze Runner/task/out/test/classes/
