@@ -1,14 +1,12 @@
 package maze;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
 
 public class Maze {
 
-    private Node[][] matrix;
-    private ArrayList<Node> nodesAvailable;
-
+    private GridItem[][] grid;
+    private ArrayList<GridItem> nodesAvailable;
+    private ArrayList<Edge> edgesAvailable;
     private final int height;
     private final int width;
 
@@ -16,125 +14,228 @@ public class Maze {
     public Maze(int height, int width) {
         this.height = height;
         this.width = width;
-        this.matrix = new Node[height][width];
+        this.grid = new GridItem[height][width];
         this.nodesAvailable = new ArrayList<>();
+        this.edgesAvailable = new ArrayList<>();
     }
 
     public void start() {
-        fillDefaultNodes();
-        randomizeNodeWeights();
-        setStartAndEnd();
+        fillDefaultGridItems();
+        setStartingNode();
+//        setEntrance();
 
-        //TODO: Check available Nodes in nodesAvailable arraylist
-        //TODO: Choose smallest weight Nodes for MST.
-        //TODO: Repeat until no nodesAvailable left. isEmpty().
+        while (!edgesAvailable.isEmpty()) {
+            chooseEdgeWithSmallestWeight();
+        }
+
+        //TODO: setEnd() ?
 
         /////////////////// TEST PRINT OUT
         System.out.println("Node Weights Representation");
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                System.out.printf("%02d" + " ", matrix[i][j].getWeight());
+                if (grid[i][j] instanceof Edge) {
+                    System.out.printf("%02d", ((Edge) grid[i][j]).getWeight());
+                } else if (grid[i][j] instanceof Node) {
+                    System.out.print("NN");
+                } else if (grid[i][j] instanceof Border) {
+                    System.out.print("BB");
+                } else {
+                    System.out.print("--");
+                }
             }
             System.out.println();
         }
-        //////////////////////////////////////////
+        /////////////////////^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-//        populateMaze();
         printMaze();
     }
 
-    // Create all new nodes
-    public void fillDefaultNodes() {
+
+    // Create Nodes, Edges, and Borders
+    public void fillDefaultGridItems() {
+
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                matrix[i][j] = new Node(i, j);
+
+                // Create Nodes
+                if (i % 2 == 1 && j % 2 == 1) {
+                    Node newNode = new Node(i, j);
+                    grid[i][j] = newNode;
+                    nodesAvailable.add(newNode);
+                }
+                // Create Edges
+                if (i % 2 == 0 && j % 2 != 0 || i % 2 != 0 && j % 2 == 0) {
+                    Edge newEdge = new Edge(i, j);
+                    grid[i][j] = newEdge;
+                    newEdge.setRandomWeight();
+                }
+                // Create Borders along outside
+                if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
+                    grid[i][j] = new Border(i, j);
+                }
             }
         }
     }
 
-    // Assign random values to each node, which will be used to find MST
-    private void randomizeNodeWeights() {
-        Random random = new Random();
-        for (int i = 1; i < height - 1; i++) {
-            for (int j = 1; j < width - 1; j++) {
-                matrix[i][j].setWeight(random.nextInt(80) + 10);
-            }
-        }
+
+    // Set starting Node (which can be random)
+    public void setStartingNode() {
+        Node startingNode = (Node) grid[1][1];
+        startingNode.setConnected(true);
+        nodesAvailable.remove((startingNode));
+        addEdgesAvailable(startingNode);
     }
 
-    // set 2 openings for start and exit
-    private void setStartAndEnd() {
+
+    // Set opening for start
+    private void setEntrance() {
         //TODO: randomize instead of preset start/end
-        matrix[1][0].setWeight(1);
-        matrix[height - 2][width - 1].setWeight(1);
-
-        addNodeIncidents(matrix[1][0]);
-        addNodeIncidents(matrix[height - 2][width - 1]);
+        grid[1][0] = new Edge(1, 0);
     }
 
 
-//    // Set values into maze[][]
-//    public void populateMaze() {
-//        for (int i = 0; i < height; i++) {
-//            for (int j = 0; j < width; j++) {
-//                //TODO: set actual, not just walls
-//                matrix[i][j].setWall(1);
-//            }
-//        }
-//    }
+    // Add Edges to edgesAvailable ArrayList, which are
+    // edges incident to Nodes that are not connected.
+    private void addEdgesAvailable(Node addedNode) {
+        nodesAvailable.remove((addedNode));
+        int nodeRow = addedNode.getRow();
+        int nodeCol = addedNode.getCol();
+        Node checkNode = null;
+        Edge checkEdge = null;
 
-    // Increase Node incident count to adjacent nodes
-    private void addNodeIncidents(Node node) {
-        int row = node.getRow();
-        int col = node.getCol();
+        // Check if edge to the right is available
+        if (nodeCol < width - 2) {
+            checkNode = (Node) grid[nodeRow][nodeCol + 2];
+//            if (checkNode != null && !checkNode.isConnected()) {
+            checkEdge = (Edge) grid[nodeRow][nodeCol + 1];
+            if (checkNode != null && nodesAvailable.contains(checkNode) &&
+                    !checkEdge.isSelected() && !edgesAvailable.contains(checkEdge)) {
+                edgesAvailable.add((Edge) grid[nodeRow][nodeCol + 1]);   //TODO: DOUBLE CHECK
+                nodesAvailable.remove(checkNode);
+            }
+        }
 
-        // Check node above
-        if (row > 1) {
-            matrix[row - 1][col].increaseIncidents();
-            addNodesAvailable(matrix[row - 1][col]);
+        // Check if edge to the left is available
+        if (nodeCol > 2) {
+            checkNode = (Node) grid[nodeRow][nodeCol - 2];
+//            if (checkNode != null && !checkNode.isConnected()) {
+            checkEdge = (Edge) grid[nodeRow][nodeCol - 1];
+            if (checkNode != null && nodesAvailable.contains(checkNode) &&
+                    !checkEdge.isSelected() && !edgesAvailable.contains(checkEdge)) {
+                edgesAvailable.add((Edge) grid[nodeRow][nodeCol - 1]); //TODO: DOUBLE CHECK
+                nodesAvailable.remove(checkNode);
+            }
         }
-        // Check node below
-        if (row < height - 2) {
-            matrix[row + 1][col].increaseIncidents();
-            addNodesAvailable(matrix[row + 1][col]);
+
+        // Check if edge above is available
+        if (nodeRow > 2) {
+            checkNode = (Node) grid[nodeRow - 2][nodeCol];
+//            if (checkNode != null && !checkNode.isConnected()) {
+            checkEdge = (Edge) grid[nodeRow - 1][nodeCol];
+            if (checkNode != null && nodesAvailable.contains(checkNode) &&
+                    !checkEdge.isSelected() && !edgesAvailable.contains(checkEdge)) {
+                edgesAvailable.add((Edge) grid[nodeRow - 1][nodeCol]);  //TODO: DOUBLE CHECK
+                nodesAvailable.remove(checkNode);
+            }
         }
-        // Check node to the left
-        if (col > 1) {
-            matrix[row][col - 1].increaseIncidents();
-            addNodesAvailable(matrix[row][col - 1]);
+
+        // Check if edge below is available
+        if (nodeRow < height - 2) {
+            checkNode = (Node) grid[nodeRow + 2][nodeCol];
+//            if (checkNode != null && !checkNode.isConnected()) {
+            checkEdge = (Edge) grid[nodeRow + 1][nodeCol];
+            if (checkNode != null && nodesAvailable.contains(checkNode) &&
+                    !checkEdge.isSelected() && !edgesAvailable.contains(checkEdge)) {
+                edgesAvailable.add((Edge) grid[nodeRow + 1][nodeCol]);  //TODO: DOUBLE CHECK
+                nodesAvailable.remove(checkNode);
+            }
         }
-        // Check node to the right
-        if (col < width - 2) {
-            matrix[row][col + 1].increaseIncidents();
-            addNodesAvailable(matrix[row][col + 1]);
+    }
+
+
+
+    // Choose next edge on edgesAvailable ArrayList
+    private void chooseEdgeWithSmallestWeight() {
+        int smallest = Integer.MAX_VALUE;
+        Edge edge = null;
+        for (Edge e : edgesAvailable) {
+            int currWeight = e.getWeight();
+            if (currWeight < smallest) {
+                smallest = currWeight;
+                edge = e;
+            }
+        }
+//        addNodeIncidents(edge);
+        if (edge != null) {
+            edge.setSelected(true);
+            edge.setWall(0);
+            edgesAvailable.remove(edge);
+            // TODO: Add to addEdgesAvailable based on new connected Node
+            ArrayList<GridItem> list = getSurroundingGridItems(edge);
+            for (GridItem item : list) {
+                // Check if one of the items is a Node and not connected yet.
+                if ( item instanceof Node && !((Node) item).isConnected()) {
+                    addEdgesAvailable((Node)item);
+                }
+            }
         }
 
     }
 
-    // Add Nodes to nodesAvailable ArrayList if it has only ONE edge incident
-    private void addNodesAvailable(Node node) {
-        // Do not add if it is preset outer wall of weight 99
-        if (node.getWeight() == 99) {
-            return;
+    // Get items from above, right, below, and left of argument if in grid area.
+    private ArrayList<GridItem> getSurroundingGridItems(GridItem gridItem) {
+        int row = gridItem.getRow();
+        int col = gridItem.getCol();
+        ArrayList<GridItem> list = new ArrayList<>();
+
+        // Check above
+        if (row > 0) {
+            list.add(grid[row - 1][col]);
+        }
+        // Check below
+        if (row < this.height - 1) {
+            list.add(grid[row + 1][col]);
+        }
+        // Check left
+        if (col > 0) {
+            list.add(grid[row][col - 1]);
+        }
+        // Check right
+        if (col < this.width - 1) {
+            list.add(grid[row][col + 1]);
         }
 
-        if (node.getIncidents() == 1) {
-            nodesAvailable.add(node);
-        } else if (node.getIncidents() > 1) {
-            nodesAvailable.remove(node);
-        }
+        return list;
     }
-
 
     // Print out maze.  "1" is wall (block character \u2588), "0" is passable
     public void printMaze() {
+        System.out.println("HEREEE I GOOOP PRINT MAZZE");
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                // wall is 1, open space is 0
-                if (matrix[i][j].getWall() == 1) {
-                    System.out.print("\u2588\u2588");
-                } else if (matrix[i][j].getWall() == 0) {
+                GridItem currentGridItem = grid[i][j];
+                // Nodes are open
+                if (currentGridItem instanceof Node) {
                     System.out.print("  ");
+                }
+                // Edges can be open or wall
+                else if (currentGridItem instanceof Edge) {
+//                    if (currentGridItem.getWall() == 0) {
+                    if (((Edge) currentGridItem).isSelected()) {
+                        System.out.print("  ");
+//                    } else if (currentGridItem.getWall() == 1) {
+                    } else if (!((Edge) currentGridItem).isSelected()) {
+//                    }  else {
+                        System.out.print("\u2588\u2588");
+                    }
+                }
+                // Border is wall
+                else if (currentGridItem instanceof Border) {
+                    System.out.print("\u2588\u2588");
+                }
+                else {
+                    System.out.print("\u2588\u2588");
                 }
             }
             System.out.println();

@@ -1,46 +1,16 @@
 package maze;
 
-public class Node {
-    private int weight;
-    private int wall;
+public class Node extends GridItem {
     private int incidents;
-    private int row;
-    private int col;
+    private boolean connected;
+
 
     public Node(int row, int col) {
-        this.weight = 99;
-        this.wall = 1;
-        this.incidents = 0;
         this.row = row;
         this.col = col;
-    }
-
-    public int getWeight() {
-        return weight;
-    }
-
-    public void setWeight(int weight) {
-        this.weight = weight;
-    }
-
-    public int getWall() {
-        return wall;
-    }
-
-    public void setWall(int wall) {
-        this.wall = wall;
-    }
-
-    public int getIncidents() {
-        return incidents;
-    }
-
-    public void setIncidents(int incidents) {
-        this.incidents = incidents;
-    }
-
-    public void increaseIncidents() {
-        this.incidents++;
+        this.incidents = 0;
+        this.connected = false;
+        this.wall = 0;
     }
 
     public int getRow() {
@@ -49,5 +19,13 @@ public class Node {
 
     public int getCol() {
         return this.col;
+    }
+
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
     }
 }
