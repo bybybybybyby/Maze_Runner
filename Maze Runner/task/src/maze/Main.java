@@ -11,6 +11,8 @@ public class Main {
         int width = scanner.nextInt();
 
         Maze maze = new Maze(height, width);
+//        Maze maze = new Maze(9,9);
+
         maze.start();
 
     }

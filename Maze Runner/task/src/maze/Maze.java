@@ -1,6 +1,7 @@
 package maze;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Maze {
 
@@ -22,13 +23,11 @@ public class Maze {
     public void start() {
         fillDefaultGridItems();
         setStartingNode();
-//        setEntrance();
+
 
         while (!edgesAvailable.isEmpty()) {
             chooseEdgeWithSmallestWeight();
         }
-
-        //TODO: setEnd() ?
 
         /////////////////// TEST PRINT OUT
         System.out.println("Node Weights Representation");
@@ -47,6 +46,8 @@ public class Maze {
             System.out.println();
         }
         /////////////////////^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        setEntranceAndExit();
 
         printMaze();
     }
@@ -79,7 +80,7 @@ public class Maze {
     }
 
 
-    // Set starting Node (which can be random)
+    // Set starting Node at index 1,1 (but, which probably can be random)
     public void setStartingNode() {
         Node startingNode = (Node) grid[1][1];
         startingNode.setConnected(true);
@@ -88,10 +89,35 @@ public class Maze {
     }
 
 
-    // Set opening for start
-    private void setEntrance() {
-        //TODO: randomize instead of preset start/end
-        grid[1][0] = new Edge(1, 0);
+    // Set opening for entrance and exit on left and right sides
+    private void setEntranceAndExit() {
+        Random random = new Random();
+        int rand1 = -1;
+        int rand2 = -1;
+
+        // If height is even, compensate by not allowing entrance and exit on lowest index.
+        if (height % 2 == 0) {
+            rand1 = random.nextInt((height - 1)/ 2) * 2 + 1;
+            rand2 = random.nextInt((height - 1)/ 2) * 2 + 1;
+        } else {
+            rand1 = random.nextInt(height / 2) * 2 + 1;
+            rand2 = random.nextInt(height / 2) * 2 + 1;
+        }
+
+        // Left opening
+        Edge edge1 = new Edge(rand1, 0);
+        edge1.setSelected(true);
+        grid[rand1][0] = edge1;
+
+        // Right opening
+        Edge edge2 = new Edge(rand2, width - 1);
+        edge2.setSelected(true);
+        grid[rand2][width - 1] = edge2;
+
+        // Second right opening for cases where width is even
+        Edge edge3 = new Edge(rand2, width - 2);
+        edge3.setSelected(true);
+        grid[rand2][width - 2] = edge3;
     }
 
 
@@ -105,9 +131,8 @@ public class Maze {
         Edge checkEdge = null;
 
         // Check if edge to the right is available
-        if (nodeCol < width - 2) {
+        if (nodeCol < width - 2 && (grid[nodeRow][nodeCol + 2] instanceof Node)) {
             checkNode = (Node) grid[nodeRow][nodeCol + 2];
-//            if (checkNode != null && !checkNode.isConnected()) {
             checkEdge = (Edge) grid[nodeRow][nodeCol + 1];
             if (checkNode != null && nodesAvailable.contains(checkNode) &&
                     !checkEdge.isSelected() && !edgesAvailable.contains(checkEdge)) {
@@ -119,7 +144,6 @@ public class Maze {
         // Check if edge to the left is available
         if (nodeCol > 2) {
             checkNode = (Node) grid[nodeRow][nodeCol - 2];
-//            if (checkNode != null && !checkNode.isConnected()) {
             checkEdge = (Edge) grid[nodeRow][nodeCol - 1];
             if (checkNode != null && nodesAvailable.contains(checkNode) &&
                     !checkEdge.isSelected() && !edgesAvailable.contains(checkEdge)) {
@@ -131,7 +155,6 @@ public class Maze {
         // Check if edge above is available
         if (nodeRow > 2) {
             checkNode = (Node) grid[nodeRow - 2][nodeCol];
-//            if (checkNode != null && !checkNode.isConnected()) {
             checkEdge = (Edge) grid[nodeRow - 1][nodeCol];
             if (checkNode != null && nodesAvailable.contains(checkNode) &&
                     !checkEdge.isSelected() && !edgesAvailable.contains(checkEdge)) {
@@ -141,9 +164,8 @@ public class Maze {
         }
 
         // Check if edge below is available
-        if (nodeRow < height - 2) {
+        if (nodeRow < height - 2 && (grid[nodeRow + 2][nodeCol] instanceof Node)) {
             checkNode = (Node) grid[nodeRow + 2][nodeCol];
-//            if (checkNode != null && !checkNode.isConnected()) {
             checkEdge = (Edge) grid[nodeRow + 1][nodeCol];
             if (checkNode != null && nodesAvailable.contains(checkNode) &&
                     !checkEdge.isSelected() && !edgesAvailable.contains(checkEdge)) {
