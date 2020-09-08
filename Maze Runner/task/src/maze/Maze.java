@@ -1,16 +1,22 @@
 package maze;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Maze {
+public class Maze implements Serializable {
 
+    private boolean printDebug = false;
+    private static final long serialVersionUID = 1L;
     private GridItem[][] grid;
-    private ArrayList<GridItem> nodesAvailable;
-    private ArrayList<Edge> edgesAvailable;
+    private final ArrayList<GridItem> nodesAvailable;
+    private final ArrayList<Edge> edgesAvailable;
     private final int height;
     private final int width;
 
+    public Maze() {
+        this(3, 3);
+    }
 
     public Maze(int height, int width) {
         this.height = height;
@@ -24,31 +30,32 @@ public class Maze {
         fillDefaultGridItems();
         setStartingNode();
 
-
         while (!edgesAvailable.isEmpty()) {
             chooseEdgeWithSmallestWeight();
         }
 
-        /////////////////// TEST PRINT OUT
-        System.out.println("Node Weights Representation");
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                if (grid[i][j] instanceof Edge) {
-                    System.out.printf("%02d", ((Edge) grid[i][j]).getWeight());
-                } else if (grid[i][j] instanceof Node) {
-                    System.out.print("NN");
-                } else if (grid[i][j] instanceof Border) {
-                    System.out.print("BB");
-                } else {
-                    System.out.print("--");
+        /*
+        DEBUG TESTING
+         */
+        if (printDebug) {
+            System.out.println("Node Weights Representation");
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    if (grid[i][j] instanceof Edge) {
+                        System.out.printf("%02d", ((Edge) grid[i][j]).getWeight());
+                    } else if (grid[i][j] instanceof Node) {
+                        System.out.print("NN");
+                    } else if (grid[i][j] instanceof Border) {
+                        System.out.print("BB");
+                    } else {
+                        System.out.print("--");
+                    }
                 }
+                System.out.println();
             }
-            System.out.println();
         }
-        /////////////////////^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
         setEntranceAndExit();
-
         printMaze();
     }
 
@@ -233,7 +240,6 @@ public class Maze {
 
     // Print out maze.  "1" is wall (block character \u2588), "0" is passable
     public void printMaze() {
-        System.out.println("HEREEE I GOOOP PRINT MAZZE");
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 GridItem currentGridItem = grid[i][j];
@@ -248,7 +254,6 @@ public class Maze {
                         System.out.print("  ");
 //                    } else if (currentGridItem.getWall() == 1) {
                     } else if (!((Edge) currentGridItem).isSelected()) {
-//                    }  else {
                         System.out.print("\u2588\u2588");
                     }
                 }
@@ -264,6 +269,40 @@ public class Maze {
         }
     }
 
+//    public void serialize(Object obj, String fileName) throws IOException {
+//        FileOutputStream fos = new FileOutputStream(fileName);
+//        BufferedOutputStream bos = new BufferedOutputStream(fos);
+//        ObjectOutputStream oos = new ObjectOutputStream(bos);
+//        oos.writeObject(obj);
+//        oos.close();
+//    }
+//
+//
+////    public static Object deserialize(String fileName) throws IOException, ClassNotFoundException {
+////        FileInputStream fis = new FileInputStream(fileName);
+////        BufferedInputStream bis = new BufferedInputStream(fis);
+////        ObjectInputStream ois = new ObjectInputStream(bis);
+////        Object obj = ois.readObject();
+////        ois.close();
+////        return obj;
+////    }
+//
+//    public void deserialize(String fileName) throws IOException, ClassNotFoundException {
+//        FileInputStream fis = new FileInputStream(fileName);
+//        BufferedInputStream bis = new BufferedInputStream(fis);
+//        ObjectInputStream ois = new ObjectInputStream(bis);
+//        Object obj = ois.readObject();
+//
+//        grid = (GridItem[][]) obj;
+//        maze
+//
+//        ois.close();
+//
+//    }
 
+
+    public GridItem[][] getGrid() {
+        return grid;
+    }
 }
 

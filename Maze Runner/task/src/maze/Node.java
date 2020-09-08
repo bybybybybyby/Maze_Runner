@@ -1,6 +1,8 @@
 package maze;
 
-public class Node extends GridItem {
+import java.io.Serializable;
+
+public class Node extends GridItem implements Serializable {
     private int incidents;
     private boolean connected;
 

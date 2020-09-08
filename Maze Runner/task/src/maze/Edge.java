@@ -1,8 +1,9 @@
 package maze;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class Edge extends GridItem {
+public class Edge extends GridItem implements Serializable {
 
     private int weight;
     private boolean selected;
