@@ -6,17 +6,18 @@ import java.util.Random;
 
 public class Maze implements Serializable {
 
-    private boolean printDebug = false;
+    private boolean printDebug = true;
     private static final long serialVersionUID = 1L;
     private GridItem[][] grid;
     private final ArrayList<GridItem> nodesAvailable;
     private final ArrayList<Edge> edgesAvailable;
     private final int height;
     private final int width;
+    private Node entranceNode;
 
-    public Maze() {
-        this(3, 3);
-    }
+//    public Maze() {
+//        this(3, 3);
+//    }
 
     public Maze(int height, int width) {
         this.height = height;
@@ -34,10 +35,15 @@ public class Maze implements Serializable {
             chooseEdgeWithSmallestWeight();
         }
 
+        setEntranceAndExit();
+
+
+
         /*
         DEBUG TESTING
          */
         if (printDebug) {
+            System.out.println("*******************************************");
             System.out.println("Node Weights Representation");
             for (int i = 0; i < height; i++) {
                 for (int j = 0; j < width; j++) {
@@ -53,15 +59,15 @@ public class Maze implements Serializable {
                 }
                 System.out.println();
             }
+            System.out.println("*******************************************");
         }
 
-        setEntranceAndExit();
         printMaze();
     }
 
 
     // Create Nodes, Edges, and Borders
-    public void fillDefaultGridItems() {
+    private void fillDefaultGridItems() {
 
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -87,8 +93,8 @@ public class Maze implements Serializable {
     }
 
 
-    // Set starting Node at index 1,1 (but, which probably can be random)
-    public void setStartingNode() {
+    // Set starting Node for generating map at index 1,1 (but, which probably can be random)
+    private void setStartingNode() {
         Node startingNode = (Node) grid[1][1];
         startingNode.setConnected(true);
         nodesAvailable.remove((startingNode));
@@ -115,6 +121,8 @@ public class Maze implements Serializable {
         Edge edge1 = new Edge(rand1, 0);
         edge1.setSelected(true);
         grid[rand1][0] = edge1;
+        // Set the Node next to the opening as the entranceNode to use when calculating escape route
+        this.entranceNode = (Node) this.grid[edge1.getRow()][edge1.getCol() + 1];
 
         // Right opening
         Edge edge2 = new Edge(rand2, width - 1);
@@ -183,7 +191,6 @@ public class Maze implements Serializable {
     }
 
 
-
     // Choose next edge on edgesAvailable ArrayList
     private void chooseEdgeWithSmallestWeight() {
         int smallest = Integer.MAX_VALUE;
@@ -240,6 +247,13 @@ public class Maze implements Serializable {
 
     // Print out maze.  "1" is wall (block character \u2588), "0" is passable
     public void printMaze() {
+
+        if (printDebug) {
+            System.out.println("***************************");
+            System.out.println("EntranceNode=" + entranceNode.getRow() + ":" + entranceNode.getCol());
+            System.out.println("***************************");
+        }
+
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 GridItem currentGridItem = grid[i][j];
@@ -269,40 +283,21 @@ public class Maze implements Serializable {
         }
     }
 
-//    public void serialize(Object obj, String fileName) throws IOException {
-//        FileOutputStream fos = new FileOutputStream(fileName);
-//        BufferedOutputStream bos = new BufferedOutputStream(fos);
-//        ObjectOutputStream oos = new ObjectOutputStream(bos);
-//        oos.writeObject(obj);
-//        oos.close();
+
+//    public GridItem[][] getGrid() {
+//        return grid;
 //    }
+
+
+    // Find the escape path (using Dijkstra's algorithm)
+//    private GridItem[][] findEscape() {
+//        GridItem[][] escapeGrid = new GridItem[height][width];
+//        Node source =
 //
 //
-////    public static Object deserialize(String fileName) throws IOException, ClassNotFoundException {
-////        FileInputStream fis = new FileInputStream(fileName);
-////        BufferedInputStream bis = new BufferedInputStream(fis);
-////        ObjectInputStream ois = new ObjectInputStream(bis);
-////        Object obj = ois.readObject();
-////        ois.close();
-////        return obj;
-////    }
-//
-//    public void deserialize(String fileName) throws IOException, ClassNotFoundException {
-//        FileInputStream fis = new FileInputStream(fileName);
-//        BufferedInputStream bis = new BufferedInputStream(fis);
-//        ObjectInputStream ois = new ObjectInputStream(bis);
-//        Object obj = ois.readObject();
-//
-//        grid = (GridItem[][]) obj;
-//        maze
-//
-//        ois.close();
 //
 //    }
 
 
-    public GridItem[][] getGrid() {
-        return grid;
-    }
 }
 
