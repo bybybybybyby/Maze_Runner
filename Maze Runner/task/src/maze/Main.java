@@ -18,6 +18,7 @@ public class Main {
                         "2. Load a maze.\n" +
                         "3. Save the maze.\n" +
                         "4. Display the maze.\n" +
+                        "5. Find the escape.\n" +
                         "0. Exit");
 
                 String input = scanner.nextLine();
@@ -52,6 +53,8 @@ public class Main {
                     }
                 } else if (input.equals("4")) {
                     maze.printMaze();
+                } else if (input.equals("5")) {
+                    maze.findEscape();
                 } else if (input.equals("0")) {
                     System.exit(0);
                 }

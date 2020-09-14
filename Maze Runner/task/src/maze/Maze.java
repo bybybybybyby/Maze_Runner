@@ -14,6 +14,7 @@ public class Maze implements Serializable {
     private final int height;
     private final int width;
     private Node entranceNode;
+    private ArrayList<Node> unprocessedNodesForEscape;
 
 //    public Maze() {
 //        this(3, 3);
@@ -25,6 +26,7 @@ public class Maze implements Serializable {
         this.grid = new GridItem[height][width];
         this.nodesAvailable = new ArrayList<>();
         this.edgesAvailable = new ArrayList<>();
+        this.unprocessedNodesForEscape = new ArrayList<>();
     }
 
     public void start() {
@@ -110,8 +112,8 @@ public class Maze implements Serializable {
 
         // If height is even, compensate by not allowing entrance and exit on lowest index.
         if (height % 2 == 0) {
-            rand1 = random.nextInt((height - 1)/ 2) * 2 + 1;
-            rand2 = random.nextInt((height - 1)/ 2) * 2 + 1;
+            rand1 = random.nextInt((height - 1) / 2) * 2 + 1;
+            rand2 = random.nextInt((height - 1) / 2) * 2 + 1;
         } else {
             rand1 = random.nextInt(height / 2) * 2 + 1;
             rand2 = random.nextInt(height / 2) * 2 + 1;
@@ -130,9 +132,11 @@ public class Maze implements Serializable {
         grid[rand2][width - 1] = edge2;
 
         // Second right opening for cases where width is even
-        Edge edge3 = new Edge(rand2, width - 2);
-        edge3.setSelected(true);
-        grid[rand2][width - 2] = edge3;
+        if (width % 2 == 0) {
+            Edge edge3 = new Edge(rand2, width - 2);
+            edge3.setSelected(true);
+            grid[rand2][width - 2] = edge3;
+        }
     }
 
 
@@ -211,8 +215,8 @@ public class Maze implements Serializable {
             ArrayList<GridItem> list = getSurroundingGridItems(edge);
             for (GridItem item : list) {
                 // Check if one of the items is a Node and not connected yet.
-                if ( item instanceof Node && !((Node) item).isConnected()) {
-                    addEdgesAvailable((Node)item);
+                if (item instanceof Node && !((Node) item).isConnected()) {
+                    addEdgesAvailable((Node) item);
                 }
             }
         }
@@ -274,8 +278,7 @@ public class Maze implements Serializable {
                 // Border is wall
                 else if (currentGridItem instanceof Border) {
                     System.out.print("\u2588\u2588");
-                }
-                else {
+                } else {
                     System.out.print("\u2588\u2588");
                 }
             }
@@ -284,19 +287,66 @@ public class Maze implements Serializable {
     }
 
 
-//    public GridItem[][] getGrid() {
-//        return grid;
-//    }
-
-
-    // Find the escape path (using Dijkstra's algorithm)
-//    private GridItem[][] findEscape() {
+//    // Find the escape path (using Dijkstra's algorithm)
+//    public GridItem[][] findEscape() {
 //        GridItem[][] escapeGrid = new GridItem[height][width];
-//        Node source =
 //
+//        /*
+//        Set all Nodes' distances from source as MAX_VALUE
+//        Add all Nodes to unprocessedNodesForEscape ArrayList
+//         */
+//        for (int i = 0; i < height; i++) {
+//            for (int j = 0; j < width; j++) {
+//                GridItem currentGridItem = grid[i][j];
+//                if (currentGridItem instanceof Node) {
+//                    ((Node) currentGridItem).setDistance(Integer.MAX_VALUE);
+//                    unprocessedNodesForEscape.add((Node) currentGridItem);
+//                }
+//            }
+//        }
 //
+//        // Set entranceNode distance as 0; this is our source Node from which all distances are calculated
+//        entranceNode.setDistance(0);
 //
-//    }
+//        /*
+//        Find unprocessed node with smallest distance.  Check all unprocessed neighbors of node, whether the distance
+//        is less than current distance.  Update current distance only if it is smaller.
+//        */
+//        if (!unprocessedNodesForEscape.isEmpty()) {
+//            int smallestDist = Integer.MAX_VALUE;
+//            Node chosenNode = null;
+//            for (Node u : unprocessedNodesForEscape) {
+//                int currentNodeDist = u.getDistance();
+//                if (currentNodeDist < smallestDist) {
+//                    smallestDist = currentNodeDist;
+//                    chosenNode = u;
+//                }
+//            }
+//
+//        }
+
+
+    //TODO: Try BFS instead of Dijstra's
+    public GridItem[][] findEscape() {
+        GridItem[][] escapeGrid = new GridItem[height][width];
+
+        if (printDebug) {
+            System.out.println("***************************************************");
+            System.out.println("NODE DISTANCES");
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    GridItem currentGridItem = grid[i][j];
+                    if (currentGridItem instanceof Node) {
+                        System.out.println(currentGridItem.getRow() + ":" +
+                                currentGridItem.getCol() + " - " + ((Node) currentGridItem).getDistance());
+                    }
+                }
+            }
+            System.out.println("***************************************************");
+        }
+
+        return escapeGrid;
+    }
 
 
 }

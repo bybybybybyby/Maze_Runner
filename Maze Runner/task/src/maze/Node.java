@@ -5,6 +5,8 @@ import java.io.Serializable;
 public class Node extends GridItem implements Serializable {
     private int incidents;
     private boolean connected;
+    private int distance;
+    private boolean distanceProcessed;
 
 
     public Node(int row, int col) {
@@ -13,6 +15,8 @@ public class Node extends GridItem implements Serializable {
         this.incidents = 0;
         this.connected = false;
         this.wall = 0;
+        this.distance = 0;
+        this.distanceProcessed = false;
     }
 
     public int getRow() {
@@ -29,5 +33,13 @@ public class Node extends GridItem implements Serializable {
 
     public void setConnected(boolean connected) {
         this.connected = connected;
+    }
+
+    public int getDistance() {
+        return distance;
+    }
+
+    public void setDistance(int distance) {
+        this.distance = distance;
     }
 }

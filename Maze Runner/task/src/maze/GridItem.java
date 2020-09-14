@@ -6,7 +6,6 @@ abstract class GridItem {
     int col;
     int wall;
 
-
     public int getRow() {
         return row;
     }
