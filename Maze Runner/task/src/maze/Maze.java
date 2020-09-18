@@ -2,6 +2,8 @@ package maze;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
 
 public class Maze implements Serializable {
@@ -14,7 +16,10 @@ public class Maze implements Serializable {
     private final int height;
     private final int width;
     private Node entranceNode;
-    private ArrayList<Node> unprocessedNodesForEscape;
+    private Node exitNode;
+//    private ArrayList<Node> unprocessedNodesForEscape;
+    private ArrayList<Node> visitedNodesForEscape;
+    private Queue<Node> queueForEscape;
 
 //    public Maze() {
 //        this(3, 3);
@@ -26,7 +31,9 @@ public class Maze implements Serializable {
         this.grid = new GridItem[height][width];
         this.nodesAvailable = new ArrayList<>();
         this.edgesAvailable = new ArrayList<>();
-        this.unprocessedNodesForEscape = new ArrayList<>();
+//        this.unprocessedNodesForEscape = new ArrayList<>();
+        this.visitedNodesForEscape = new ArrayList<>();
+        this.queueForEscape = new LinkedList<>();
     }
 
     public void start() {
@@ -123,13 +130,15 @@ public class Maze implements Serializable {
         Edge edge1 = new Edge(rand1, 0);
         edge1.setSelected(true);
         grid[rand1][0] = edge1;
-        // Set the Node next to the opening as the entranceNode to use when calculating escape route
+        // Set the Node next to the left opening as the entranceNode to use when calculating escape route
         this.entranceNode = (Node) this.grid[edge1.getRow()][edge1.getCol() + 1];
 
         // Right opening
         Edge edge2 = new Edge(rand2, width - 1);
         edge2.setSelected(true);
         grid[rand2][width - 1] = edge2;
+        // Set the Node next to the right opening as the exitNode to use when calculating escape route
+        this.exitNode = (Node) this.grid[edge2.getRow()][edge2.getCol() - 1];
 
         // Second right opening for cases where width is even
         if (width % 2 == 0) {
@@ -155,7 +164,7 @@ public class Maze implements Serializable {
             checkEdge = (Edge) grid[nodeRow][nodeCol + 1];
             if (checkNode != null && nodesAvailable.contains(checkNode) &&
                     !checkEdge.isSelected() && !edgesAvailable.contains(checkEdge)) {
-                edgesAvailable.add((Edge) grid[nodeRow][nodeCol + 1]);   //TODO: DOUBLE CHECK
+                edgesAvailable.add((Edge) grid[nodeRow][nodeCol + 1]);
                 nodesAvailable.remove(checkNode);
             }
         }
@@ -166,7 +175,7 @@ public class Maze implements Serializable {
             checkEdge = (Edge) grid[nodeRow][nodeCol - 1];
             if (checkNode != null && nodesAvailable.contains(checkNode) &&
                     !checkEdge.isSelected() && !edgesAvailable.contains(checkEdge)) {
-                edgesAvailable.add((Edge) grid[nodeRow][nodeCol - 1]); //TODO: DOUBLE CHECK
+                edgesAvailable.add((Edge) grid[nodeRow][nodeCol - 1]);
                 nodesAvailable.remove(checkNode);
             }
         }
@@ -177,7 +186,7 @@ public class Maze implements Serializable {
             checkEdge = (Edge) grid[nodeRow - 1][nodeCol];
             if (checkNode != null && nodesAvailable.contains(checkNode) &&
                     !checkEdge.isSelected() && !edgesAvailable.contains(checkEdge)) {
-                edgesAvailable.add((Edge) grid[nodeRow - 1][nodeCol]);  //TODO: DOUBLE CHECK
+                edgesAvailable.add((Edge) grid[nodeRow - 1][nodeCol]);
                 nodesAvailable.remove(checkNode);
             }
         }
@@ -188,7 +197,7 @@ public class Maze implements Serializable {
             checkEdge = (Edge) grid[nodeRow + 1][nodeCol];
             if (checkNode != null && nodesAvailable.contains(checkNode) &&
                     !checkEdge.isSelected() && !edgesAvailable.contains(checkEdge)) {
-                edgesAvailable.add((Edge) grid[nodeRow + 1][nodeCol]);  //TODO: DOUBLE CHECK
+                edgesAvailable.add((Edge) grid[nodeRow + 1][nodeCol]);
                 nodesAvailable.remove(checkNode);
             }
         }
@@ -327,10 +336,71 @@ public class Maze implements Serializable {
 
 
     //TODO: Try BFS instead of Dijstra's
-    public GridItem[][] findEscape() {
+    /*
+    The algorithm goes like this:
+    1. Choose an initial node of a graph, mark it as visited and set its distance to 0.
+    2. Consider all unvisited neighbors of the nodes visited at the previous step and mark all of them as visited.
+    Set the distance to each of these nodes to d + 1, where d is the distance to the nodes processed at the previous step.
+    3. Repeat step 2 until all the nodes are visited.
+     */
+    //TODO: DUNNOOOOO WHAT TO DO YET, REDO WITH BFS QUEUES
+//    public GridItem[][] findEscape() {
+    public void findEscape() {
         GridItem[][] escapeGrid = new GridItem[height][width];
+//        Queue<Node> queue = new LinkedList<>();
+
+        queueForEscape.add(entranceNode);
+
+        while (!queueForEscape.isEmpty()) {
+            // Pop the first node from queue
+            Node currentNode = queueForEscape.remove();
+            visitedNodesForEscape.add(currentNode);
+            System.out.println("*** POPPED NODE=" + currentNode.getRow() + ":" + currentNode.getCol());
+            // If this node is the exit Node, then search is over
+            if (currentNode.equals(exitNode)) {   // TODO: Confirm equality check is OK
+                //TODO: get the path
+                System.out.println("EXITTTEEEDDDD!");
+            } else {
+                // Otherwise, add this node's children to the end of the queue and repeat the steps
+                findAccessibleNeighborNodes(currentNode);
+
+            }
+
+        }
+
+
+
+
+//        // Set starting entrance Node, add it to visited Nodes, and set Distance as 0.
+//        Node currentNode = entranceNode;
+//        visitedNodesForEscape.add(currentNode);
+//        currentNode.setDistance(0);
+//        ArrayList<Node> list = findAccessibleNeighborNodes(currentNode);
+//
+//        // Consider all unvisited neighbor Nodes until the exit Node is visited
+//        while (!visitedNodesForEscape.contains(exitNode)) {
+//
+//
+////            for (Node node : list) {
+////                visitedNodesForEscape.add(node);
+////                node.setDistance(currentNode.getDistance() + 1);
+////                list = findAccessibleNeighborNodes(node);
+////            }
+
+
+
+
+            System.out.println("*****************************************************");
+            System.out.println("NODES IN QUEUE");
+            for (Node node : queueForEscape) {
+                System.out.println(node.getRow() + ":" + node.getCol());
+            }
+
+
 
         if (printDebug) {
+
+
             System.out.println("***************************************************");
             System.out.println("NODE DISTANCES");
             for (int i = 0; i < height; i++) {
@@ -345,7 +415,72 @@ public class Maze implements Serializable {
             System.out.println("***************************************************");
         }
 
-        return escapeGrid;
+//        return escapeGrid;
+    }
+
+
+
+
+    /**
+     * Check surrounding nodes and retrieve neighbor nodes that are unvisited and can be reached (no wall in between)
+     * Get Nodes from above, right, below, and left of argument Node, if in grid area.
+     *
+     * @param node
+     * @return a list with Nodes that are neighbors and have no wall in between
+     */
+    //TODO: DUNNOOOOO WHAT TO DO YET, REDO WITH BFS QUEUES
+//    private ArrayList<Node> findAccessibleNeighborNodes(Node node) {
+    private void findAccessibleNeighborNodes(Node node) {
+
+        int row = node.getRow();
+        int col = node.getCol();
+//        ArrayList<Node> list = new ArrayList<>();
+
+        // Check if a Node exists 2 rows above, and if the Edge 1 row above is set as passable (not a wall)
+//        if (row > 1  && grid[row - 1][col].getWall() == 0) {
+
+
+        if (row > 1) {
+            Node nodeAbove = (Node) grid[row - 2][col];
+            if (row > 1  && grid[row - 1][col].getWall() == 0 && !visitedNodesForEscape.contains(nodeAbove)) {
+                visitedNodesForEscape.add(nodeAbove);
+                nodeAbove.setDistance(node.getDistance() + 1);
+                queueForEscape.add(nodeAbove);
+            }
+        }
+
+
+        // Check if a Node exists 2 rows below, and if the Edge 1 row below is set as passable (not a wall)
+//        if (row < this.height - 2 && grid[row + 1][col].getWall() == 0) {
+        if (row < this.height - 2 && grid[row + 1][col].getWall() == 0 && !visitedNodesForEscape.contains(grid[row + 2][col])) {
+            visitedNodesForEscape.add((Node) grid[row + 2][col]);
+            queueForEscape.add((Node) grid[row + 2][col]);
+        }
+        // Check if a Node exists 2 columns to the left, and if the Edge 1 column to the left is passable (not a wall)
+        if (col > 1 && grid[row][col - 1].getWall() == 0  && !visitedNodesForEscape.contains(grid[row][col - 2])) {
+            visitedNodesForEscape.add((Node) grid[row][col - 2]);
+            queueForEscape.add((Node) grid[row][col - 2]);
+        }
+        // Check if a Node exists 2 columns to the right, and if the Edge 1 column to the right is passable (not a wall)
+        if (col < this.width - 2 && grid[row][col + 1].getWall() == 0  && !visitedNodesForEscape.contains(grid[row][col + 2])) {
+            visitedNodesForEscape.add((Node) grid[row][col + 2]);
+            queueForEscape.add((Node) grid[row][col + 2]);
+        }
+
+
+//        for (Node curr : list) {
+//            visitedNodesForEscape.add(node);
+//            node.setDistance(node.getDistance() + 1);
+//            findAccessibleNeighborNodes(node);
+//        }
+
+
+
+//        return list;
+
+
+
+
     }
 
 

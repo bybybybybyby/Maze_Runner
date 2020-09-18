@@ -30,7 +30,6 @@ public class Main {
                     maze.start();
                     currentMazeAvailable = true;
                 } else if (input.equals("2")) {
-                    //TODO:
                     System.out.println("Filename to load: ");
                     String filename = scanner.nextLine();
                     try {
@@ -72,7 +71,6 @@ public class Main {
                     maze.start();
                     currentMazeAvailable = true;
                 } else if (input.equals("2")) {
-                    //TODO:
                     System.out.println("Filename to load: ");
                     String filename = scanner.nextLine();
                     try {
