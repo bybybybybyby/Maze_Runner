@@ -8,17 +8,17 @@ import java.util.Random;
 
 public class Maze implements Serializable {
 
-    private boolean printDebug = false;
+    private final boolean printDebug = false;
     private static final long serialVersionUID = 1L;
-    private GridItem[][] grid;
+    private final GridItem[][] grid;
     private final ArrayList<GridItem> nodesAvailable;
     private final ArrayList<Edge> edgesAvailable;
     private final int height;
     private final int width;
     private Node entranceNode;
     private Node exitNode;
-    private ArrayList<Node> visitedNodesForEscape;
-    private Queue<Node> queueForEscape;
+    private final ArrayList<Node> visitedNodesForEscape;
+    private final Queue<Node> queueForEscape;
 
 
     public Maze(int height, int width) {
@@ -41,11 +41,7 @@ public class Maze implements Serializable {
 
         setEntranceAndExit();
 
-
-
-        /*
-        DEBUG TESTING
-         */
+        // DEBUG TESTING
         if (printDebug) {
             System.out.println("*******************************************");
             System.out.println("Node Weights Representation");
@@ -98,10 +94,10 @@ public class Maze implements Serializable {
 
                     grid[i][j] = newEdge;
                 }
-//                // Create Borders along outside
-//                if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
-//                    grid[i][j] = new Border(i, j);
-//                }
+                // Create Borders along outside
+                if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
+                    grid[i][j] = new Border(i, j);
+                }
             }
         }
     }
@@ -119,8 +115,8 @@ public class Maze implements Serializable {
     // Set opening for entrance and exit on left and right sides
     private void setEntranceAndExit() {
         Random random = new Random();
-        int rand1 = -1;
-        int rand2 = -1;
+        int rand1;
+        int rand2;
 
         // If height is even, compensate by not allowing entrance and exit on lowest index.
         if (height % 2 == 0) {
@@ -142,10 +138,15 @@ public class Maze implements Serializable {
         Edge edge2 = new Edge(rand2, width - 1);
         edge2.setSelected(true);
         grid[rand2][width - 1] = edge2;
-        // Set the Node next to the right opening as the exitNode to use when calculating escape route
-        this.exitNode = (Node) this.grid[edge2.getRow()][edge2.getCol() - 1];
 
-        // Second right opening for cases where width is even
+        // Set the Node next to the right opening as the exitNode to use when calculating escape route
+        if (width % 2 == 0) {
+            this.exitNode = (Node) this.grid[edge2.getRow()][edge2.getCol() - 2];
+        } else {
+            this.exitNode = (Node) this.grid[edge2.getRow()][edge2.getCol() - 1];
+        }
+
+        // Extra right opening for cases where width is even (there is an extra wall)
         if (width % 2 == 0) {
             Edge edge3 = new Edge(rand2, width - 2);
             edge3.setSelected(true);
@@ -160,8 +161,8 @@ public class Maze implements Serializable {
         nodesAvailable.remove((addedNode));
         int nodeRow = addedNode.getRow();
         int nodeCol = addedNode.getCol();
-        Node checkNode = null;
-        Edge checkEdge = null;
+        Node checkNode;
+        Edge checkEdge;
 
         // Check if edge to the right is available
         if (nodeCol < width - 2 && (grid[nodeRow][nodeCol + 2] instanceof Node)) {
@@ -369,7 +370,7 @@ public class Maze implements Serializable {
         int col = node.getCol();
 
         // Check if a Node exists 2 rows above, and if the Edge 1 row above is set as passable (not a wall)
-        if (row > 1) {
+        if (row > 1 && grid[row - 2][col] instanceof Node) {
             Node nodeAbove = (Node) grid[row - 2][col];
             if (grid[row - 1][col].getWall() == 0 && !visitedNodesForEscape.contains(nodeAbove)) {
                 visitedNodesForEscape.add(nodeAbove);  // Add node to visited list
@@ -380,7 +381,7 @@ public class Maze implements Serializable {
         }
 
         // Check if a Node exists 2 rows below, and if the Edge 1 row below is set as passable (not a wall)
-        if (row < this.height - 2) {
+        if (row < this.height - 2 && grid[row + 2][col] instanceof Node) {
             Node nodeBelow = (Node) grid[row + 2][col];
             if (grid[row + 1][col].getWall() == 0 && !visitedNodesForEscape.contains(nodeBelow)) {
                 visitedNodesForEscape.add(nodeBelow);
@@ -391,7 +392,7 @@ public class Maze implements Serializable {
         }
 
         // Check if a Node exists 2 columns to the left, and if the Edge 1 column to the left is passable (not a wall)
-        if (col > 1) {
+        if (col > 1 && grid[row][col - 2] instanceof Node) {
             Node nodeLeft = (Node) grid[row][col - 2];
             if (grid[row][col - 1].getWall() == 0 && !visitedNodesForEscape.contains(nodeLeft)) {
                 visitedNodesForEscape.add(nodeLeft);
@@ -402,7 +403,7 @@ public class Maze implements Serializable {
         }
 
         // Check if a Node exists 2 columns to the right, and if the Edge 1 column to the right is passable (not a wall)
-        if (col < this.width - 2) {
+        if (col < this.width - 2  && grid[row][col + 2] instanceof Node) {
             Node nodeRight = (Node) grid[row][col + 2];
             if (col < this.width - 2 && grid[row][col + 1].getWall() == 0 && !visitedNodesForEscape.contains(nodeRight)) {
                 visitedNodesForEscape.add(nodeRight);
@@ -452,6 +453,9 @@ public class Maze implements Serializable {
         // Set the outer edge entrance and exit as part of escape path.
         grid[entranceNode.getRow()][entranceNode.getCol() - 1].setEscapePath(true);
         grid[exitNode.getRow()][exitNode.getCol() + 1].setEscapePath(true);
+        if (width % 2 == 0) {
+            grid[exitNode.getRow()][exitNode.getCol() + 2].setEscapePath(true);
+        }
 
         printMaze(true);
     }

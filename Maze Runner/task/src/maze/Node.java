@@ -6,7 +6,7 @@ public class Node extends GridItem implements Serializable {
     private int incidents;
     private boolean connected;
     private int distance;
-    private boolean distanceProcessed;
+//    private boolean distanceProcessed;
     private Node prev;
 
 
@@ -17,7 +17,7 @@ public class Node extends GridItem implements Serializable {
         this.connected = false;
         this.wall = 0;
         this.distance = 0;
-        this.distanceProcessed = false;
+//        this.distanceProcessed = false;
         this.prev = null;
     }
 

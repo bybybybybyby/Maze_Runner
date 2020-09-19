@@ -33,7 +33,6 @@ public class Main {
                     System.out.println("Filename to load: ");
                     String filename = scanner.nextLine();
                     try {
-//                        maze = new Maze();
                         maze = deserialize(filename);
                     } catch (IOException e) {
                         System.out.println("Deserialize error: " + e.getMessage());
@@ -45,7 +44,6 @@ public class Main {
                     System.out.print("Enter a filename: ");
                     String filename = scanner.nextLine();
                     try {
-//                        maze.serialize(maze, filename);
                         serialize(maze, filename);
                     } catch (IOException e) {
                         System.out.println("Serialize error: " + e.getMessage());
@@ -74,7 +72,6 @@ public class Main {
                     System.out.println("Filename to load: ");
                     String filename = scanner.nextLine();
                     try {
-//                        maze = new Maze();
                         maze = deserialize(filename);
                     } catch (IOException e) {
                         System.out.println("Deserialize error: " + e.getMessage());
