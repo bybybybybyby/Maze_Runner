@@ -77,6 +77,14 @@ public class Maze implements Serializable {
     // Create Nodes, Edges, and Borders
     private void fillDefaultGridItems() {
 
+        // Initially fill everything as Border (wall)
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                grid[i][j] = new Border(i, j);
+            }
+        }
+
+        // Next, set Nodes and Edges
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
 
@@ -92,10 +100,10 @@ public class Maze implements Serializable {
                     grid[i][j] = newEdge;
                     newEdge.setRandomWeight();
                 }
-                // Create Borders along outside
-                if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
-                    grid[i][j] = new Border(i, j);
-                }
+//                // Create Borders along outside
+//                if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
+//                    grid[i][j] = new Border(i, j);
+//                }
             }
         }
     }
@@ -266,19 +274,23 @@ public class Maze implements Serializable {
             System.out.println("***************************");
         }
 
+
+
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 GridItem currentGridItem = grid[i][j];
+
+                if (currentGridItem.isEscapePath()) {
+                    System.out.print("//");
+                }
                 // Nodes are open
-                if (currentGridItem instanceof Node) {
-                    System.out.print("  ");
+                else if (currentGridItem instanceof Node) {
+                        System.out.print("  ");
                 }
                 // Edges can be open or wall
                 else if (currentGridItem instanceof Edge) {
-//                    if (currentGridItem.getWall() == 0) {
                     if (((Edge) currentGridItem).isSelected()) {
                         System.out.print("  ");
-//                    } else if (currentGridItem.getWall() == 1) {
                     } else if (!((Edge) currentGridItem).isSelected()) {
                         System.out.print("\u2588\u2588");
                     }
@@ -295,47 +307,8 @@ public class Maze implements Serializable {
     }
 
 
-//    // Find the escape path (using Dijkstra's algorithm)
-//    public GridItem[][] findEscape() {
-//        GridItem[][] escapeGrid = new GridItem[height][width];
-//
-//        /*
-//        Set all Nodes' distances from source as MAX_VALUE
-//        Add all Nodes to unprocessedNodesForEscape ArrayList
-//         */
-//        for (int i = 0; i < height; i++) {
-//            for (int j = 0; j < width; j++) {
-//                GridItem currentGridItem = grid[i][j];
-//                if (currentGridItem instanceof Node) {
-//                    ((Node) currentGridItem).setDistance(Integer.MAX_VALUE);
-//                    unprocessedNodesForEscape.add((Node) currentGridItem);
-//                }
-//            }
-//        }
-//
-//        // Set entranceNode distance as 0; this is our source Node from which all distances are calculated
-//        entranceNode.setDistance(0);
-//
-//        /*
-//        Find unprocessed node with smallest distance.  Check all unprocessed neighbors of node, whether the distance
-//        is less than current distance.  Update current distance only if it is smaller.
-//        */
-//        if (!unprocessedNodesForEscape.isEmpty()) {
-//            int smallestDist = Integer.MAX_VALUE;
-//            Node chosenNode = null;
-//            for (Node u : unprocessedNodesForEscape) {
-//                int currentNodeDist = u.getDistance();
-//                if (currentNodeDist < smallestDist) {
-//                    smallestDist = currentNodeDist;
-//                    chosenNode = u;
-//                }
-//            }
-//
-//        }
-
-
-    //TODO: Try BFS instead of Dijstra's
     /*
+    Using BFS (Breadth first search)
     The algorithm goes like this:
     1. Choose an initial node of a graph, mark it as visited and set its distance to 0.
     2. Consider all unvisited neighbors of the nodes visited at the previous step and mark all of them as visited.
@@ -345,8 +318,7 @@ public class Maze implements Serializable {
     //TODO: DUNNOOOOO WHAT TO DO YET, REDO WITH BFS QUEUES
 //    public GridItem[][] findEscape() {
     public void findEscape() {
-        GridItem[][] escapeGrid = new GridItem[height][width];
-//        Queue<Node> queue = new LinkedList<>();
+
 
         queueForEscape.add(entranceNode);
 
@@ -367,6 +339,7 @@ public class Maze implements Serializable {
             // If this node is the exit Node, then search is over
             if (currentNode.equals(exitNode)) {
                 //TODO: get the path
+                drawEscapePath(exitNode);
                 System.out.println("EXITTTEEEDDDD!");
             } else {
                 // Otherwise, add this node's children to the end of the queue and repeat the steps
@@ -375,8 +348,6 @@ public class Maze implements Serializable {
             }
 
         }
-
-
 
 
         if (printDebug) {
@@ -394,9 +365,7 @@ public class Maze implements Serializable {
             System.out.println("***************************************************");
         }
 
-//        return escapeGrid;
     }
-
 
 
 
@@ -417,9 +386,10 @@ public class Maze implements Serializable {
         if (row > 1) {
             Node nodeAbove = (Node) grid[row - 2][col];
             if (grid[row - 1][col].getWall() == 0 && !visitedNodesForEscape.contains(nodeAbove)) {
-                visitedNodesForEscape.add(nodeAbove);
-                nodeAbove.setDistance(node.getDistance() + 1);
-                queueForEscape.add(nodeAbove);
+                visitedNodesForEscape.add(nodeAbove);  // Add node to visited list
+                nodeAbove.setDistance(node.getDistance() + 1);  // Set distance for node as previous distance + 1
+                nodeAbove.setPrev(node);  // Set the node we are coming from as the previous to this node
+                queueForEscape.add(nodeAbove);  // Add node to the queue
             }
         }
 
@@ -429,6 +399,7 @@ public class Maze implements Serializable {
             if (grid[row + 1][col].getWall() == 0 && !visitedNodesForEscape.contains(nodeBelow)) {
                 visitedNodesForEscape.add(nodeBelow);
                 nodeBelow.setDistance(node.getDistance() + 1);
+                nodeBelow.setPrev(node);  // Set the node we are coming from as the previous to this node
                 queueForEscape.add(nodeBelow);
             }
         }
@@ -439,6 +410,7 @@ public class Maze implements Serializable {
             if (grid[row][col - 1].getWall() == 0  && !visitedNodesForEscape.contains(nodeLeft)) {
                 visitedNodesForEscape.add(nodeLeft);
                 nodeLeft.setDistance(node.getDistance() + 1);
+                nodeLeft.setPrev(node);  // Set the node we are coming from as the previous to this node
                 queueForEscape.add(nodeLeft);
             }
         }
@@ -449,13 +421,40 @@ public class Maze implements Serializable {
             if (col < this.width - 2 && grid[row][col + 1].getWall() == 0  && !visitedNodesForEscape.contains(nodeRight)) {
                 visitedNodesForEscape.add(nodeRight);
                 nodeRight.setDistance(node.getDistance() + 1);
+                nodeRight.setPrev(node);  // Set the node we are coming from as the previous to this node
                 queueForEscape.add(nodeRight);
             }
         }
-
-
     }
 
+    // Draw the escape path.  After the exitNode is found, it uses previous Node to backtrack to source.
+    private void drawEscapePath(Node exitNode) {
+        GridItem[][] escapeGrid = grid.clone();
+
+        GridItem current = exitNode;
+
+        current.setEscapePath(true);
+
+
+
+
+
+
+
+
+        escapeGrid[1][1].setEscapePath(true);
+        escapeGrid[2][1].setEscapePath(true);
+
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j< width; j++) {
+                System.out.println(i + ":" + j);
+                if (escapeGrid[i][j] != null && escapeGrid[i][j].isEscapePath()) {
+                    System.out.println("escape-" + i + ":" + j);
+
+                }
+            }
+        }
+    }
 
 }
 

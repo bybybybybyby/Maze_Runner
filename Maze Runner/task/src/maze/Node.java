@@ -7,6 +7,7 @@ public class Node extends GridItem implements Serializable {
     private boolean connected;
     private int distance;
     private boolean distanceProcessed;
+    private Node prev;
 
 
     public Node(int row, int col) {
@@ -17,6 +18,7 @@ public class Node extends GridItem implements Serializable {
         this.wall = 0;
         this.distance = 0;
         this.distanceProcessed = false;
+        this.prev = null;
     }
 
     public int getRow() {
@@ -41,5 +43,13 @@ public class Node extends GridItem implements Serializable {
 
     public void setDistance(int distance) {
         this.distance = distance;
+    }
+
+    public Node getPrev() {
+        return prev;
+    }
+
+    public void setPrev(Node prev) {
+        this.prev = prev;
     }
 }
