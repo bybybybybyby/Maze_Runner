@@ -413,18 +413,46 @@ public class Maze implements Serializable {
         }
     }
 
-    // Draw the escape path.  After the exitNode is found, it uses previous Node to backtrack until it reaches source.
+    // Draw the escape path.  Starting from the exitNode, it uses previous Node to backtrack until it reaches source (entrance).
     private void drawEscapePath(Node exitNode) {
-        GridItem currentItem = exitNode;
+        GridItem currentNode = exitNode;
 
         while (true) {
-            currentItem.setEscapePath(true);
-            if (currentItem == entranceNode) {
+            currentNode.setEscapePath(true);
+            if (currentNode == entranceNode) {
                 break;
             } else {
-                currentItem = ((Node) currentItem).getPrev();
+                GridItem previousNode = ((Node) currentNode).getPrev();
+
+                // Set in between edge when previous Node is above
+                if (previousNode.getRow() == currentNode.getRow() - 2) {
+                    GridItem edgeBetween = grid[currentNode.getRow() - 1][currentNode.getCol()];
+                    edgeBetween.setEscapePath(true);
+                }
+                // Set in between edge when previous Node is below
+                if (previousNode.getRow() == currentNode.getRow() + 2) {
+                    GridItem edgeBetween = grid[currentNode.getRow() + 1][currentNode.getCol()];
+                    edgeBetween.setEscapePath(true);
+                }
+                // Set in between edge when previous Node is to the right
+                if (previousNode.getCol() == currentNode.getCol() + 2) {
+                    GridItem edgeBetween = grid[currentNode.getRow()][currentNode.getCol() + 1];
+                    edgeBetween.setEscapePath(true);
+                }
+                // Set in between edge when previous Node is to the left
+                if (previousNode.getCol() == currentNode.getCol() - 2) {
+                    GridItem edgeBetween = grid[currentNode.getRow()][currentNode.getCol() - 1];
+                    edgeBetween.setEscapePath(true);
+                }
+
+                currentNode = previousNode;
             }
         }
+
+        // Set the outer edge entrance and exit as part of escape path.
+        grid[entranceNode.getRow()][entranceNode.getCol() - 1].setEscapePath(true);
+        grid[exitNode.getRow()][exitNode.getCol() + 1].setEscapePath(true);
+
         printMaze(true);
     }
 }
