@@ -1,6 +1,8 @@
 package maze;
 
-abstract class GridItem {
+import java.io.Serializable;
+
+abstract class GridItem implements Serializable {
 
     int row;
     int col;

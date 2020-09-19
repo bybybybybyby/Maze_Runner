@@ -51,7 +51,7 @@ public class Main {
                         System.out.println("Serialize error: " + e.getMessage());
                     }
                 } else if (input.equals("4")) {
-                    maze.printMaze();
+                    maze.printMaze(false);
                 } else if (input.equals("5")) {
                     maze.findEscape();
                 } else if (input.equals("0")) {
