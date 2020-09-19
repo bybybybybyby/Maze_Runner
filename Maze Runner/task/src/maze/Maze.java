@@ -68,7 +68,6 @@ public class Maze implements Serializable {
 
     // Create Nodes, Edges, and Borders
     private void fillDefaultGridItems() {
-
         // Initially fill everything as Border (wall)
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -94,7 +93,7 @@ public class Maze implements Serializable {
 
                     grid[i][j] = newEdge;
                 }
-                // Create Borders along outside
+                // Create Borders along outside.  (Needed to fix even size maze)
                 if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
                     grid[i][j] = new Border(i, j);
                 }
@@ -155,8 +154,7 @@ public class Maze implements Serializable {
     }
 
 
-    // Add Edges to edgesAvailable ArrayList, which are
-    // edges incident to Nodes that are not connected.
+    // Add Edges to edgesAvailable ArrayList, which are edges incident to Nodes that are not connected.
     private void addEdgesAvailable(Node addedNode) {
         nodesAvailable.remove((addedNode));
         int nodeRow = addedNode.getRow();
@@ -221,12 +219,10 @@ public class Maze implements Serializable {
                 edge = e;
             }
         }
-//        addNodeIncidents(edge);
         if (edge != null) {
             edge.setSelected(true);
             edge.setWall(0);
             edgesAvailable.remove(edge);
-            // TODO: Add to addEdgesAvailable based on new connected Node
             ArrayList<GridItem> list = getSurroundingGridItems(edge);
             for (GridItem item : list) {
                 // Check if one of the items is a Node and not connected yet.
@@ -235,7 +231,6 @@ public class Maze implements Serializable {
                 }
             }
         }
-
     }
 
     // Get items from above, right, below, and left of argument if in grid area.
@@ -266,13 +261,11 @@ public class Maze implements Serializable {
 
     // Print out maze.  "1" is wall (block character \u2588), "0" is passable
     public void printMaze(boolean escapePath) {
-
         if (printDebug) {
             System.out.println("***************************");
             System.out.println("EntranceNode=" + entranceNode.getRow() + ":" + entranceNode.getCol());
             System.out.println("***************************");
         }
-
 
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -333,15 +326,12 @@ public class Maze implements Serializable {
             // If this node is the exit Node, then search is over
             if (currentNode.equals(exitNode)) {
                 drawEscapePath(exitNode);
-                System.out.println("Found Exit Node!");
             } else {
                 // Otherwise, add this node's children to the end of the queue and repeat the steps
                 findAccessibleNeighborNodes(currentNode);
             }
         }
-
         visitedNodesForEscape.clear();
-
         if (printDebug) {
             System.out.println("***************************************************");
             System.out.println("NODE DISTANCES");
@@ -357,7 +347,6 @@ public class Maze implements Serializable {
             System.out.println("***************************************************");
         }
     }
-
 
     /**
      * Check surrounding nodes and retrieve neighbor nodes that are unvisited and can be reached (no wall in between)
@@ -445,7 +434,6 @@ public class Maze implements Serializable {
                     GridItem edgeBetween = grid[currentNode.getRow()][currentNode.getCol() - 1];
                     edgeBetween.setEscapePath(true);
                 }
-
                 currentNode = previousNode;
             }
         }

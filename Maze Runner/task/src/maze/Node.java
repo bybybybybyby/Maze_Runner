@@ -3,21 +3,17 @@ package maze;
 import java.io.Serializable;
 
 public class Node extends GridItem implements Serializable {
-    private int incidents;
     private boolean connected;
     private int distance;
-//    private boolean distanceProcessed;
     private Node prev;
 
 
     public Node(int row, int col) {
         this.row = row;
         this.col = col;
-        this.incidents = 0;
         this.connected = false;
         this.wall = 0;
         this.distance = 0;
-//        this.distanceProcessed = false;
         this.prev = null;
     }
 
